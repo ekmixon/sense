@@ -14,11 +14,10 @@ class PostProcessor:
             return predictions
 
         if self.indices:
-            if len(self.indices) == 1:
-                index = self.indices[0]
-                return predictions[index]
-            else:
+            if len(self.indices) != 1:
                 return [predictions[index] for index in self.indices]
+            index = self.indices[0]
+            return predictions[index]
         return predictions
 
     def postprocess(self, prediction):
@@ -73,7 +72,7 @@ class AggregatedPostProcessors(PostProcessor):
     def postprocess(self, classif_output):
         output = {}
         for processor in self.post_processors:
-            output.update(processor.postprocess(classif_output))
+            output |= processor.postprocess(classif_output)
 
         return {self.out_key: output}
 
@@ -98,10 +97,9 @@ class TwoPositionsCounter(PostProcessor):
             if self.current_position == 0:
                 if classif_output[self.pos1] > self.threshold1:
                     self.current_position = 1
-            else:
-                if classif_output[self.pos0] > self.threshold0:
-                    self.current_position = 0
-                    self.count += 1
+            elif classif_output[self.pos0] > self.threshold0:
+                self.current_position = 0
+                self.count += 1
 
         return {self.out_key: self.count}
 

@@ -86,12 +86,17 @@ def run_action_recognition(model_name: str,
     border_size = 30
 
     display_ops = [
-        sense.display.DisplayFPS(expected_camera_fps=net.fps,
-                                 expected_inference_fps=net.fps / net.step_size),
+        sense.display.DisplayFPS(
+            expected_camera_fps=net.fps,
+            expected_inference_fps=net.fps / net.step_size,
+        ),
         sense.display.DisplayTopKClassificationOutputs(top_k=1, threshold=0.5),
-        sense.display.DisplayClassnameOverlay(thresholds=LAB_THRESHOLDS,
-                                              border_size_top=border_size if not title else border_size + 50),
+        sense.display.DisplayClassnameOverlay(
+            thresholds=LAB_THRESHOLDS,
+            border_size_top=border_size + 50 if title else border_size,
+        ),
     ]
+
 
     display_results = sense.display.DisplayResults(title=title, display_ops=display_ops, display_fn=display_fn)
 

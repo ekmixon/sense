@@ -196,10 +196,9 @@ def load_weights_from_resources(checkpoint_path: str):
         return load_weights(checkpoint_path)
 
     except FileNotFoundError:
-        raise FileNotFoundError('Weights file missing: {}. '
-                                'To download, please go to '
-                                'https://20bn.com/licensing/sdk/evaluation and follow the '
-                                'instructions.'.format(checkpoint_path))
+        raise FileNotFoundError(
+            f'Weights file missing: {checkpoint_path}. To download, please go to https://20bn.com/licensing/sdk/evaluation and follow the instructions.'
+        )
 
 
 def load_weights_except_on_travis(checkpoint_path: str):
@@ -212,9 +211,8 @@ def load_weights_except_on_travis(checkpoint_path: str):
     """
     if not running_on_travis():
         return load_weights_from_resources(checkpoint_path)
-    else:
-        print('Weights are not loaded on Travis.')
-        return {}
+    print('Weights are not loaded on Travis.')
+    return {}
 
 
 def update_backbone_weights(backbone_weights: dict, checkpoint: dict):

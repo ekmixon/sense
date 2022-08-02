@@ -48,7 +48,7 @@ def start_demo():
     if output_video_name:
         output_dir = os.path.join(os.getcwd(), 'demo_output_videos')
         os.makedirs(output_dir, exist_ok=True)
-        path_out = os.path.join(output_dir, output_video_name + '.mp4')
+        path_out = os.path.join(output_dir, f'{output_video_name}.mp4')
     else:
         path_out = None
 
@@ -69,12 +69,13 @@ def start_demo():
     }
 
     if demo in ['run_calorie_estimation', 'run_fitness_tracker']:
-        example_kwargs.update({
+        example_kwargs |= {
             'weight': float(data['weight']),
             'height': float(data['height']),
             'age': float(data['age']),
             'gender': data['gender'],
-        })
+        }
+
 
     # Dynamically import the script based on demo name
     import_demo = importlib.import_module(f'examples.{demo}')

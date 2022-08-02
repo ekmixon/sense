@@ -83,16 +83,15 @@ class VideoSource:
         return uniform_frame_sample(np.array(video), target_fps / video_fps)
 
     def _get_frame(self):
-        if self._frames is not None:
-            if self._frame_idx < len(self._frames):
-                frame = self._frames[self._frame_idx]
-                self._frame_idx += 1
-                return frame
-        else:
+        if self._frames is None:
             ret, frame = self._cam.read()
             if ret:
                 return frame
 
+        elif self._frame_idx < len(self._frames):
+            frame = self._frames[self._frame_idx]
+            self._frame_idx += 1
+            return frame
         return None
 
     def get_image(self) -> Optional[Tuple[np.ndarray, np.ndarray]]:
@@ -101,19 +100,18 @@ class VideoSource:
         The captured image and a scaled copy of the image are returned.
         """
         img = self._get_frame()
-        if img is not None:
-            img_copy = img.copy()
-            if self.preserve_aspect_ratio:
-                img_copy = self.pad_to_square(img)
-            scaled_img = cv2.resize(img_copy, self.size) if self.size else img
-            return img, scaled_img
-        else:
+        if img is None:
             # Could not grab another frame (file ended?)
             return None
+        img_copy = img.copy()
+        if self.preserve_aspect_ratio:
+            img_copy = self.pad_to_square(img)
+        scaled_img = cv2.resize(img_copy, self.size) if self.size else img
+        return img, scaled_img
 
     def pad_to_square(self, img):
         """Pad an image to the shape of a square with borders."""
-        square_size = max(img.shape[0:2])
+        square_size = max(img.shape[:2])
         pad_top = int((square_size - img.shape[0]) / 2)
         pad_bottom = square_size - img.shape[0] - pad_top
         pad_left = int((square_size - img.shape[1]) / 2)

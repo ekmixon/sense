@@ -158,10 +158,11 @@ def submit_annotation():
     description = {'file': f'{video}.mp4', 'fps': fps}
 
     out_annotation = os.path.join(tags_dir, f'{video}.json')
-    time_annotation = []
+    time_annotation = [
+        int(data[f'{frame_idx}_tag'])
+        for frame_idx in range(int(data['n_images']))
+    ]
 
-    for frame_idx in range(int(data['n_images'])):
-        time_annotation.append(int(data[f'{frame_idx}_tag']))
 
     description['time_annotation'] = time_annotation
 
@@ -226,9 +227,7 @@ def train_logreg(path):
                 annotation_file = os.path.join(tags_dir, video_tag_file)
 
                 features = np.load(feature_file)
-                for f in features:
-                    all_features.append(f.mean(axis=(1, 2)))
-
+                all_features.extend(f.mean(axis=(1, 2)) for f in features)
                 with open(annotation_file, 'r') as f:
                     annotations = json.load(f)['time_annotation']
 

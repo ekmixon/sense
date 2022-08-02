@@ -66,7 +66,7 @@ def start_testing():
     if output_video_name:
         output_dir = os.path.join(path, 'output_videos')
         os.makedirs(output_dir, exist_ok=True)
-        path_out = os.path.join(output_dir, output_video_name + '.mp4')
+        path_out = os.path.join(output_dir, f'{output_video_name}.mp4')
     else:
         path_out = None
 

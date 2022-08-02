@@ -175,9 +175,8 @@ def extract_frames(video_path, inference_engine, path_frames=None, return_frames
         images = video_source.get_image()
         if images is None:
             break
-        else:
-            image, image_rescaled = images
-            frames.append(image_rescaled)
+        image, image_rescaled = images
+        frames.append(image_rescaled)
 
     frames = np.array(frames)
 
@@ -314,9 +313,8 @@ def training_loops(net, train_loader, valid_loader, use_gpu, num_epochs, lr_sche
     best_top1 = -1.
     best_loss = float('inf')
 
-    for epoch in range(0, num_epochs):  # loop over the dataset multiple times
-        new_lr = lr_schedule.get(epoch)
-        if new_lr:
+    for epoch in range(num_epochs):  # loop over the dataset multiple times
+        if new_lr := lr_schedule.get(epoch):
             log_fn(f"update lr to {new_lr}")
             for param_group in optimizer.param_groups:
                 param_group['lr'] = new_lr
@@ -333,17 +331,16 @@ def training_loops(net, train_loader, valid_loader, use_gpu, num_epochs, lr_sche
         log_fn('[%d] train loss: %.3f train top1: %.3f valid loss: %.3f top1: %.3f'
                % (epoch + 1, train_loss, train_top1, valid_loss, valid_top1))
 
-        if not temporal_annotation_training:
-            if valid_top1 > best_top1:
-                best_top1 = valid_top1
-                best_state_dict = net.state_dict().copy()
-                save_confusion_matrix(path_out, cnf_matrix, label_names, confmat_event=confmat_event)
-        else:
+        if temporal_annotation_training:
             if valid_loss < best_loss:
                 best_loss = valid_loss
                 best_state_dict = net.state_dict().copy()
                 save_confusion_matrix(path_out, cnf_matrix, label_names_temporal, confmat_event=confmat_event)
 
+        elif valid_top1 > best_top1:
+            best_top1 = valid_top1
+            best_state_dict = net.state_dict().copy()
+            save_confusion_matrix(path_out, cnf_matrix, label_names, confmat_event=confmat_event)
         # save the last checkpoint
         model_state_dict = net.state_dict().copy()
         model_state_dict = {clean_pipe_state_dict_key(key): value
@@ -360,7 +357,7 @@ def run_epoch(data_loader, net, criterion, label_names_temporal, optimizer=None,
     epoch_top_predictions = []
     epoch_labels = []
 
-    for i, data in enumerate(data_loader):
+    for data in data_loader:
         # get the inputs; data is a list of [inputs, targets]
         inputs, targets, temporal_annotation = data
         if temporal_annotation_training:
@@ -381,8 +378,8 @@ def run_epoch(data_loader, net, criterion, label_names_temporal, optimizer=None,
                 targets = targets[:, 0]
                 # realign the number of outputs
                 min_pred_number = min(outputs.shape[0], targets.shape[0])
-                targets = targets[0:min_pred_number]
-                outputs = outputs[0:min_pred_number]
+                targets = targets[:min_pred_number]
+                outputs = outputs[:min_pred_number]
         else:
             # Average predictions on the time dimension to get a tensor of size 1 x num_classes
             # This assumes validation operates with batch_size=1 and process all available features (no cropping)
@@ -392,8 +389,8 @@ def run_epoch(data_loader, net, criterion, label_names_temporal, optimizer=None,
                 targets = targets[0]
                 # realign the number of outputs
                 min_pred_number = min(outputs.shape[0], targets.shape[0])
-                targets = targets[0:min_pred_number]
-                outputs = outputs[0:min_pred_number]
+                targets = targets[:min_pred_number]
+                outputs = outputs[:min_pred_number]
             else:
                 outputs = torch.mean(outputs, dim=0, keepdim=True)
 
@@ -417,7 +414,12 @@ def run_epoch(data_loader, net, criterion, label_names_temporal, optimizer=None,
     loss = running_loss / len(data_loader)
 
     if temporal_annotation_training:
-        cnf_matrix = confusion_matrix(epoch_labels, epoch_top_predictions, labels=range(0, len(label_names_temporal)))
+        cnf_matrix = confusion_matrix(
+            epoch_labels,
+            epoch_top_predictions,
+            labels=range(len(label_names_temporal)),
+        )
+
     else:
         cnf_matrix = confusion_matrix(epoch_labels, epoch_top_predictions)
 

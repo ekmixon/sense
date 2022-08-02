@@ -104,7 +104,7 @@ class Controller:
                     # A new clip is ready
                     self.inference_engine.put_nowait(self.clip)
 
-                self.frame_index = self.frame_index % self.inference_engine.step_size
+                self.frame_index %= self.inference_engine.step_size
 
                 # Get predictions
                 prediction = self.inference_engine.get_nowait()
@@ -137,7 +137,7 @@ class Controller:
     def postprocess_prediction(self, prediction):
         post_processed_data = {}
         for post_processor in self.postprocessors:
-            post_processed_data.update(post_processor(prediction))
+            post_processed_data |= post_processor(prediction)
         return {'prediction': prediction, **post_processed_data}
 
     def display_prediction(self, img: np.ndarray, prediction_postprocessed: dict):

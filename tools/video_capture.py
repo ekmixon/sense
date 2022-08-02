@@ -120,7 +120,7 @@ def _capture_video(video_duration=0., record=False):
             _play_audio(DONE_SOUND, no_audio)
 
         calculated_fps = round(len(frames) / video_duration)
-        fps = 16 if calculated_fps <= 16 else calculated_fps
+        fps = max(calculated_fps, 16)
 
         if record and not skip and not _shutdown:
             out = cv2.VideoWriter(os.path.join(path_out, file), 0x7634706d, fps, frame_size)
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         # Avoid overwriting pre-existing files
         while file in os.listdir(path_out):
             i += 1
-            file = f"{filename}_{str(i)}.mp4"
+            file = f"{filename}_{i}.mp4"
 
         # Show timer window before recording
         if _shutdown:

@@ -40,7 +40,9 @@ class SteppableConv3dAs2d(nn.Conv2d):
         return super().forward(x)
 
     def initialize_internal_state(self, x):
-        self.internal_state = torch.cat(self.temporal_footprint * [torch.zeros_like(x[0:1])])
+        self.internal_state = torch.cat(
+            self.temporal_footprint * [torch.zeros_like(x[:1])]
+        )
 
     def pad_internal_state(self, x):
         x = torch.cat([self.internal_state, x])
@@ -109,7 +111,7 @@ class InvertedResidual(nn.Module):  # noqa: D101
         layers = []
         if expand_ratio != 1:
             # Point-wise expansion
-            stride = 1 if not temporal_stride else (2, 1, 1)
+            stride = (2, 1, 1) if temporal_stride else 1
             if temporal_shift and sparse_temporal_conv:
                 convlayer = SteppableSparseConv3dAs2d
                 kernel_size = 1
@@ -141,11 +143,10 @@ class InvertedResidual(nn.Module):  # noqa: D101
 
     def realign(self, input_, output_):  # noqa: D102
         n_out = output_.shape[0]
-        if self.temporal_stride:
-            indices = [-1 - 2 * idx for idx in range(n_out)]
-            return input_[indices[::-1]]
-        else:
+        if not self.temporal_stride:
             return input_[-n_out:]
+        indices = [-1 - 2 * idx for idx in range(n_out)]
+        return input_[indices[::-1]]
 
 
 class StridedInflatedMobileNetV2(RealtimeNeuralNet):
@@ -223,9 +224,8 @@ class StridedInflatedMobileNetV2(RealtimeNeuralNet):
         temporal_dependency = 1
 
         for index, layer in enumerate(self.cnn[::-1]):
-            if isinstance(layer, InvertedResidual):
-                if layer.temporal_stride:
-                    temporal_dependency = 2 * temporal_dependency
+            if isinstance(layer, InvertedResidual) and layer.temporal_stride:
+                temporal_dependency = 2 * temporal_dependency
 
             num_required_frames_per_layer[len(self.cnn) - 1 - index] = temporal_dependency
             num_required_frames_per_layer[-1 - index] = temporal_dependency

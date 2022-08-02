@@ -43,7 +43,7 @@ class Container:
         self.in_index = []
         self.in_names = []
         self.image_inputs = []
-        self.layer_names = dict()
+        self.layer_names = {}
         self.frames = 0
         self.layer_list = []
         self.fake_weights = False
@@ -62,7 +62,7 @@ class KerasConverter:
 
         for section in self.cfg_parser.sections():
             config = ConfigSection(self.cfg_parser[section])
-            logging.info("***** Parsing section {} *****".format(section))
+            logging.info(f"***** Parsing section {section} *****")
             if section.startswith("convolutional"):
                 convolutional(config, self.container)
 
@@ -80,11 +80,8 @@ class KerasConverter:
 
             elif section.startswith("output"):
                 output(config, self.container)
-            elif section.startswith("net"):
-                pass
-
-            else:
-                raise ValueError("Unsupported section header type: {}".format(section))
+            elif not section.startswith("net"):
+                raise ValueError(f"Unsupported section header type: {section}")
 
         # Create and save model.
         logging.info("done reading config file")

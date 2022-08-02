@@ -64,9 +64,7 @@ class InferenceEngine(Thread):
         """
         Return a clip from the output queue of the inference engine if available.
         """
-        if self._queue_out.empty():
-            return None
-        return self._queue_out.get_nowait()
+        return None if self._queue_out.empty() else self._queue_out.get_nowait()
 
     def stop(self):
         """Terminate the inference engine."""

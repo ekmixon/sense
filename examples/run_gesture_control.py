@@ -99,18 +99,25 @@ def run_gesture_control(model_name: str,
     border_size_right = 500
 
     display_ops = [
-        sense.display.DisplayFPS(expected_camera_fps=net.fps,
-                                 expected_inference_fps=net.fps / net.step_size),
-        sense.display.DisplayClassnameOverlay(thresholds=LAB_THRESHOLDS,
-                                              duration=1,
-                                              border_size_top=border_size_top if not title else border_size_top + 50,
-                                              border_size_right=border_size_right),
-        sense.display.DisplayPredictionBarGraph(ENABLED_LABELS,
-                                                LAB_THRESHOLDS,
-                                                x_offset=900,
-                                                y_offset=100,
-                                                display_counts=True)
+        sense.display.DisplayFPS(
+            expected_camera_fps=net.fps,
+            expected_inference_fps=net.fps / net.step_size,
+        ),
+        sense.display.DisplayClassnameOverlay(
+            thresholds=LAB_THRESHOLDS,
+            duration=1,
+            border_size_top=border_size_top + 50 if title else border_size_top,
+            border_size_right=border_size_right,
+        ),
+        sense.display.DisplayPredictionBarGraph(
+            ENABLED_LABELS,
+            LAB_THRESHOLDS,
+            x_offset=900,
+            y_offset=100,
+            display_counts=True,
+        ),
     ]
+
     display_results = sense.display.DisplayResults(title=title,
                                                    display_ops=display_ops,
                                                    border_size_top=border_size_top,

@@ -84,7 +84,7 @@ class CalorieAccumulator(PostProcessor):
             met_value_avg = (time_window * met_value_avg + met_value * duration) / (time_window + duration)
             time_window += duration
             if time_window >= self.smoothing:
-                self.buffer = self.buffer[0:idx + 1]    # remove outdated data
+                self.buffer = self.buffer[:idx + 1]
                 break
 
         return met_value_avg

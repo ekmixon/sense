@@ -91,8 +91,8 @@ def convert(backbone_settings, classifier_settings, weights_full, output_name, p
     os.makedirs(output_dir, exist_ok=True)
 
     conversion_parameters = backbone_settings["conversion_parameters"]
-    keras_file = os.path.join(output_dir, output_name + ".h5")
-    tflite_file = os.path.join(output_dir, output_name + ".tflite")
+    keras_file = os.path.join(output_dir, f"{output_name}.h5")
+    tflite_file = os.path.join(output_dir, f"{output_name}.tflite")
 
     cfg_parser = load_config(backbone_settings, classifier_settings)
     keras_converter = KerasConverter(cfg_parser, weights_full, conversion_parameters)
@@ -109,7 +109,7 @@ def convert(backbone_settings, classifier_settings, weights_full, output_name, p
     logging.info(f"Saved Keras model to {keras_file}")
 
     if plot_model:
-        to_file = os.path.join(output_dir, output_name + ".png")
+        to_file = os.path.join(output_dir, f"{output_name}.png")
         plot(model, to_file=to_file, show_shapes=True)
         logging.info(f"Saved model plot to {to_file}")
 
@@ -138,9 +138,7 @@ if __name__ == "__main__":
     path_in = args["--path_in"]
     plot_model = args["--plot_model"]
     float32 = args["--float32"]
-    verbose = args["--verbose"]
-
-    if verbose:
+    if verbose := args["--verbose"]:
         logging.getLogger().setLevel(logging.INFO)
 
     classifier_settings = SUPPORTED_CLASSIFIER_CONVERSIONS.get(classifier_name)

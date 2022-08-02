@@ -126,7 +126,7 @@ class DisplayTopKClassificationOutputs(BaseDisplay):
             activity, proba = sorted_predictions[index]
             y_pos = 20 * index + self.y_offset
             if proba >= self.threshold:
-                put_text(img, 'Activity: {}'.format(activity[0:50]), (10, y_pos))
+                put_text(img, f'Activity: {activity[:50]}', (10, y_pos))
                 put_text(img, 'Proba: {:0.2f}'.format(proba), (10 + self.x_offset,
                                                                y_pos))
         return img
@@ -172,7 +172,7 @@ class DisplayCounts(BaseDisplay):
 class DisplayExerciseRepCounts(DisplayCounts):
 
     def display_count(self, activity, count, img, y_pos, color):
-        put_text(img, f'Exercise: {activity[0:50]}', (10, y_pos), color=color)
+        put_text(img, f'Exercise: {activity[:50]}', (10, y_pos), color=color)
         put_text(img, f'Count: {count}', (10 + self.x_offset, y_pos), color=color)
 
 
@@ -221,7 +221,7 @@ class DisplayFPS(BaseDisplay):
 
         # Text color change if inference engine fps go below certain range
         if self.expected_inference_fps \
-                and inference_engine_fps < self.expected_inference_fps * self.low_performance_rate:
+                    and inference_engine_fps < self.expected_inference_fps * self.low_performance_rate:
             text_color = (0, 0, 255)
         else:
             text_color = self.default_text_color
@@ -504,7 +504,7 @@ class DisplayResults:
         return img
 
     def resize_to_fit_window(self, img):
-        height, width = img.shape[0:2]
+        height, width = img.shape[:2]
         window_aspect_ratio = self.window_size[1] / self.window_size[0]
         img_aspect_ratio = width / height
 
